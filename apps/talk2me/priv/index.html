@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>talk2me</title>
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/ws_events_dispatcher.js"></script>
+    <script type="text/javascript">
+      var server = "ws://" + window.location.host + "/websocket"; 
+      var websocket;
+
+      $(document).ready(init);
+      $(window).unload(disconnect);
+      
+      function init() {
+          showMain();
+          connect();
+      };
+
+      function showMain()
+      {
+          $('#chat').hide();
+          $('#main').show();
+      }
+
+      function showChat()
+      {
+          $('#main').hide();
+          $('#chat').show();
+      }
+
+      function register()
+      {
+          var name = $('#name').val();
+          var room = $('#room').val();
+          websocket.send("user_register", {name: name, room: room});
+      }
+
+      function connect() 
+      {
+          websocket = new FancyWebSocket(server);
+          
+          websocket.bind("update_meta", function(data) {
+              updateCounter(data.users_online);
+          });
+          websocket.bind("user_register", function(data) {
+              $('#current_room').text(data.room);
+              showChat();
+          });
+          websocket.bind("user_message", function(data) {
+              addMessage(data.name, data.text);
+          });
+      };
+
+      function disconnect()
+      {
+          websocket.send("user_disconnect", null);
+          websocket.close();
+      }
+    
+      function updateCounter(value) 
+      {
+          $('#counter').text(value);
+      }
+
+      function addMessage(name, text)
+      {
+          var line = $('<p>').text("<" + name + "> " + text);
+          $('#log').append(line);
+      }
+
+      function sendMessage()
+      {
+          var text = $('#text').val();
+          websocket.send("user_message", text);
+          $('#text').val('');
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="main">
+        <p>Name: <input type='text' id="name" /></p>
+        <p>Room: <input type='text' id="room" /></p>
+        <p><button type="button" onclick="register()">connect</button>
+    </div>
+    <div id="chat">
+        <p style="display:inline">Room: <p style="display:inline" id="current_room"></p>
+        <br />
+        <p style="display:inline">Users: </p><p style="display:inline" id="counter"></p>
+
+	    <p>
+	        <input type='text' id="text" />
+	        <button type="button" onclick="sendMessage()">send</button>
+	    </p>
+
+	<div id="log"></div>
+    </div>
+  </body>
+</html> 
