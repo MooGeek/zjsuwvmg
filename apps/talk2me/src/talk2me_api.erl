@@ -38,7 +38,10 @@ register(RoomName, UserName) ->
     ok = talk2me_manager:subscribe(Room, User),
     Message = #message{
         event = <<"user_register">>,
-        data = #{room => RoomName}
+        data = #{
+          room => RoomName,
+          name => UserName
+        }
     },
     talk2me_manager:send(Room, Message),
     {Room, User}.

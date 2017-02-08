@@ -51,7 +51,7 @@ new(Name) ->
     -> gen_event:add_handler_ret() | {error, _}.
 subscribe(Room, User) ->
     try
-        gen_event:add_handler(Room#room.id, {?MODULE, User#user.id}, [User#user.id])
+        gen_event:add_sup_handler(Room#room.id, {?MODULE, User#user.id}, [User#user.id])
     catch
         _:_ ->
             {error, malformed_user}
@@ -80,7 +80,12 @@ send(Room, Message) ->
 -spec users(#room{})
     -> list().
 users(Room) ->
-    gen_event:which_handlers(Room#room.id).
+    try
+        gen_event:which_handlers(Room#room.id)
+    catch
+        _:_ ->
+            []
+    end.
 
 
 -record(state, {
@@ -103,5 +108,5 @@ handle_info(_, State) ->
 code_change(_OldVsn, State, _Extra) -> 
     {ok, State}.
 
-terminate(_Reason, _State) -> 
+terminate(_Reason, _State) ->
     ok.

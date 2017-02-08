@@ -12,6 +12,7 @@ build:
 check:
 	$(REBAR) xref
 	$(REBAR) dialyzer
-
+	$(REBAR) ct -c
+	$(REBAR) cover
 
 .PHONY: all clean build check
